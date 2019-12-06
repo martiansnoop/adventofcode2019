@@ -9,8 +9,22 @@ if (require.main === module) {
     test("1,9,10,3,2,3,11,0,99,30,40,50", "3500,9,10,70,2,3,11,0,99,30,40,50");
 
     const input = fs.readFileSync('day2_input.txt', 'utf8');
-    const output = compileAndRun(input, true);
+    const output = compileAndRun(input, [12, 2]);
     console.log("output", output[0])
+
+    const out = performGravityAssist(input);
+    console.log("output", out)
+}
+
+function performGravityAssist(input) {
+    for (let i = 0; i < 100; i++) {
+        for (let j = 0; j < 100; j++) {
+            const [output] = compileAndRun(input, [i, j]);
+            if (output === 19690720) {
+                return 100*i+j;
+            } 
+        }
+    }
 }
 
 function test(input, expected) {
@@ -20,14 +34,13 @@ function test(input, expected) {
     assert.strictEqual(actual, expected);
 }
 
-// NASA totally wouldn't allow this mungeProgram flag, but SANTA is fine with it
-function compileAndRun(program, mungeProgram) {
+function compileAndRun(program, input) {
     const ints = program.trim().split(",").map(x => parseInt(x));
     console.log("ints", ints)
 
-    if (mungeProgram) {
-        ints[1] = 12;
-        ints[2] = 2;
+    if (input) {
+        ints[1] = input[0];
+        ints[2] = input[1];
     }
 
     let ptr = 0;
