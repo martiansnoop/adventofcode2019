@@ -30,7 +30,6 @@ function test(program, expected) {
     assert.strictEqual(actual, expected);
 }
 
-// output is an array that this function is going to mutate
 function compileAndRun(program, input) {
     const ints = program.trim().split(",").map(x => parseInt(x));
     console.log("ints", ints)
@@ -38,6 +37,8 @@ function compileAndRun(program, input) {
     return [ints, out];
 }
 
+// mem is an array. input is an int. 
+// this function is going to mutate the values of mem.
 function runProgram(mem, input) {
     const out = [];
     let ptr = 0;
