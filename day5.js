@@ -12,68 +12,75 @@ if (require.main === module) {
 }
 
 function testIO(program, expectedMem, expectedOut) {
-    const output = [];
     console.log("starting", program, expectedMem, expectedOut)
-    const actual = compileAndRun(program, 1, output).join(",");
-    console.log("asserting memory", actual, expectedMem)
-    assert.strictEqual(actual, expectedMem);
+    const [actualMem, actualOut] = compileAndRun(program, 1);
+    const serializedMem = actualMem.join(",");
+    console.log("asserting memory", serializedMem, expectedMem)
+    assert.strictEqual(serializedMem, expectedMem);
 
-    const serializedOut = output.join(",");
+    const serializedOut = actualOut.join(",");
     console.log("asserting output", serializedOut, expectedOut)
     assert.strictEqual(serializedOut, expectedOut);
 }
 
 function test(program, expected) {
     console.log("starting", program, expected)
-    const actual = compileAndRun(program).join(",");
+    const actual = compileAndRun(program)[0].join(",");
     console.log("asserting", actual, expected)
     assert.strictEqual(actual, expected);
 }
 
 // output is an array that this function is going to mutate
-function compileAndRun(program, input = 1, output = []) {
+function compileAndRun(program, input) {
     const ints = program.trim().split(",").map(x => parseInt(x));
     console.log("ints", ints)
+    const out = runProgram(ints, input)
+    return [ints, out];
+}
 
+function runProgram(mem, input) {
+    const out = [];
     let ptr = 0;
     let stop = false;
     let a, b, c;
     while(!stop) {
-        const opcode = ints[ptr];
+        const opcode = mem[ptr];
         console.log("opcode", opcode);
         switch(opcode) {
             case 99:
                 stop = true;
                 break;
             case 1:
-                a = ints[ptr+1];
-                b = ints[ptr+2];
-                c = ints[ptr+3];
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = mem[ptr+3];
                 console.log("adding", a, b, c);
-                ints[c] = ints[a] + ints[b];
+                mem[c] = mem[a] + mem[b];
                 ptr += 4;
                 break;
             case 2:
-                a = ints[ptr+1];
-                b = ints[ptr+2];
-                c = ints[ptr+3];
-                ints[c] = ints[a] * ints[b];
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = mem[ptr+3];
+                mem[c] = mem[a] * mem[b];
                 ptr += 4;
                 console.log("multiplying", a, b, c);
                 break;
             case 3:
-                a = ints[ptr+1];
-                ints[a] = input;
+                a = mem[ptr+1];
+                mem[a] = input;
                 ptr += 2;
+                console.log("input", a)
                 break;
             case 4: 
-                a = ints[ptr+1];
-                output.push(ints[a]);
+                a = mem[ptr+1];
+                out.push(mem[a]);
                 ptr += 2;
+                console.log("output", a)
                 break;
             default: 
                 throw new Error("unknown opcode " + opcode);
         }
     }
-    return ints;
+    return out;
 }
