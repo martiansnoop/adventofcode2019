@@ -7,6 +7,7 @@ if (require.main === module) {
     assert.strictEqual(true, meetsCriteria("1122345"));
     assert.strictEqual(false, meetsCriteria("123450"));
     assert.strictEqual(false, meetsCriteria("124444"));
+    assert.strictEqual(true, meetsCriteria("114444"));
 
     const codes = countPossibleCodes(158126, 624574);
     console.log("codes", codes);
@@ -37,26 +38,16 @@ function isAscending(digits) {
 }
 
 function hasPair(digits) {
-    let prev = -1;
-    let runningMatches = 1;
-    for (let d of digits) {
-        console.log("digit", d, prev, runningMatches);
-        if (prev === -1) { 
-            console.log("first")
-        } else if (d === prev) {
-            runningMatches++;
-            console.log("new match", runningMatches);
-        } else if (runningMatches === 2) {
-            console.log("found one");
-            return true;
-        } else {
-            console.log("resetting to 1")
-            runningMatches = 1;
-        } 
-        prev = d;
+    for (let i = 0; i < digits.length; i++) {
+        let streak = 1;
+        while (digits[i] === digits[i+1]) {
+            i++;
+            streak++;
+        }
+        if (streak === 2) return true;
     }
     return false;
-} 
+}
 
 function getDigits(num) {
     const ds = [];
