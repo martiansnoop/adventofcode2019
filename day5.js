@@ -9,12 +9,18 @@ if (require.main === module) {
     test("1,9,10,3,2,3,11,0,99,30,40,50", "3500,9,10,70,2,3,11,0,99,30,40,50");
 
     testIO("3,0,4,0,99", "1,0,4,0,99", "1");
+    testIO("3,21,1008,21,8,20,1005,20,22,107,8,21,20,"
+        +"1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4"
+        +",20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", undefined, "1000", 8);
+
 
     testOpcode("1002", [2, 0, 1, 0])
 
     const input = fs.readFileSync('day5_input.txt', 'utf8');
     const [mem, out] = compileAndRun(input, 1);
     console.log("out", out);;
+    // const [mem2, out2] = compileAndRun(input, 5);
+    // console.log("out2", out2);;
 }
 
 function testOpcode(instruction, expected) {
@@ -22,12 +28,14 @@ function testOpcode(instruction, expected) {
     assert.deepStrictEqual(parseOpcode(instruction), expected);
 }
 
-function testIO(program, expectedMem, expectedOut) {
+function testIO(program, expectedMem, expectedOut, input = 1) {
     console.log("starting", program, expectedMem, expectedOut)
-    const [actualMem, actualOut] = compileAndRun(program, 1);
-    const serializedMem = actualMem.join(",");
-    console.log("asserting memory", serializedMem, expectedMem)
-    assert.strictEqual(serializedMem, expectedMem);
+    const [actualMem, actualOut] = compileAndRun(program, input);
+    if (expectedMem) {
+        const serializedMem = actualMem.join(",");
+        console.log("asserting memory", serializedMem, expectedMem)
+        assert.strictEqual(serializedMem, expectedMem);
+    }
 
     const serializedOut = actualOut.join(",");
     console.log("asserting output", serializedOut, expectedOut)
@@ -101,6 +109,36 @@ function runProgram(mem, input) {
                 out.push(b);
                 ptr += 2;
                 console.log("output", a)
+                break;
+            case 5:
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = resolve(b, mem, modes[0])
+                ptr = (a !== 0) ? c : ptr + 2;
+                break;
+            case 6:
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = resolve(b, mem, modes[0])
+                ptr = (a === 0) ? c : ptr + 2;
+                break;
+            case 7:
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = mem[ptr+3];
+                d = resolve(a, mem, modes[0]);
+                e = resolve(b, mem, modes[1]);
+                mem[c] = d < e ? 1 : 0;
+                ptr += 4;
+                break;
+            case 8:
+                a = mem[ptr+1];
+                b = mem[ptr+2];
+                c = mem[ptr+3];
+                d = resolve(a, mem, modes[0]);
+                e = resolve(b, mem, modes[1]);
+                mem[c] = d === e ? 1 : 0;
+                ptr += 4;
                 break;
             default: 
                 throw new Error("unknown opcode " + opcode);
